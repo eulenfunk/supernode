@@ -17,7 +17,7 @@ SUPERNODE_IPV6_CLIENT_PREFIX=${SUPERNODE_IPV6_PREFIX%/*}/64
 SUPERNODE_IPV4_CLIENT_NET_ADDR=${SUPERNODE_IPV4_CLIENT_NET%/*}
 SUPERNODE_IPV4_DHCP_RANGE_START=${SUPERNODE_IPV4_CLIENT_NET%.0.0/*}.1.1
 SUPERNODE_IPV4_DHCP_RANGE_END=${SUPERNODE_IPV4_CLIENT_NET%.0.0/*}.10.254
-
+         
 EXT=eulenfunk
 
 function show_sysctl
@@ -61,7 +61,7 @@ cat << _EOF > dhcpd.conf.${EXT}
 ### >>> Start Freifunk Konfiguration nach Eulenfunk-Schema
 authoritative;
 subnet ${SUPERNODE_IPV4_CLIENT_NET_ADDR} netmask 255.255.0.0 {
-        range ${SUPERNODE_IPV4_DHCP_RANGE_START} ${SUPERNODE_IPV4_DHCP_RANGE_STOP};
+        range ${SUPERNODE_IPV4_DHCP_RANGE_START} ${SUPERNODE_IPV4_DHCP_RANGE_END};
         default-lease-time 300;
         max-lease-time 600;
         option domain-name-servers 8.8.8.8;
