@@ -10,7 +10,7 @@ IPV6_NET_ADDRESS=${SUPERNODE_IPV6_PREFIX%/*}
 SUPERNODE_IPV6_TRANS_REMOTE=${IPV6_NET_ADDRESS}1
 SUPERNODE_IPV6_CLIENT_PREFIX=${IPV6_NET_ADDRESS}/64
 
-BATMTU=$(cat /etc/fastd/client/fastd.conf|grep mtu\ |cut -d" " -f2|sed s/\;//);
+BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
 MSSMTU=$((BATMTU - 78))
 echo BATMTU:$BATMTU   MSSMTU:$MSSMTU
 

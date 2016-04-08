@@ -3,7 +3,7 @@
 BASE=/opt/eulenfunk/supernode
 
 . ${BASE}/supernode.config
-BATMTU=$(cat /etc/fastd/client/fastd.conf|grep mtu\ |cut -d" " -f2|sed s/\;//);
+BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
 MSSMTU=$((BATMTU - 78))
 DHCPMTU=$((BATMTU - 38))
 
