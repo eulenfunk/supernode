@@ -7,7 +7,7 @@ BATMTU=$(cat /etc/fastd/client/fastd.conf|grep mtu\ |cut -d" " -f2|sed s/\;//);
 MSSMTU=$((BATMTU - 78))
 DHCPMTU=$((BATMTU - 38))
 
-
+echo BATMTU:$BATMTU   DHCPMTU:$DHCPMTU
 
 SUPERNODE_IPV4_CLIENT_ADDR=${SUPERNODE_IPV4_CLIENT_NET%.0/*}.1
 SUPERNODE_IPV6_CLIENT_ADDR=${SUPERNODE_IPV6_PREFIX%/*}3/64

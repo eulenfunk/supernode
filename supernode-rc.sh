@@ -12,6 +12,7 @@ SUPERNODE_IPV6_CLIENT_PREFIX=${IPV6_NET_ADDRESS}/64
 
 BATMTU=$(cat /etc/fastd/client/fastd.conf|grep mtu\ |cut -d" " -f2|sed s/\;//);
 MSSMTU=$((BATMTU - 78))
+echo BATMTU:$BATMTU   MSSMTU:$MSSMTU
 
 /sbin/iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
 
