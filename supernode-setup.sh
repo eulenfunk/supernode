@@ -4,8 +4,9 @@ BASE=/opt/eulenfunk/supernode
 
 . ${BASE}/supernode.config
 BATMTU=$(cat /etc/fastd/client/fastd.conf|grep mtu\ |cut -d" " -f2|sed s/\;//);
-MSSMTU=$(expr $BATMTU - 78)
-DHCPMTU=$(expor $BATMTU - 38)
+MSSMTU=$((BATMTU - 78))
+DHCPMTU=$((BATMTU - 38))
+
 
 
 SUPERNODE_IPV4_CLIENT_ADDR=${SUPERNODE_IPV4_CLIENT_NET%.0/*}.1
@@ -65,7 +66,7 @@ subnet ${SUPERNODE_IPV4_CLIENT_NET_ADDR} netmask 255.255.0.0 {
         max-lease-time 600;
         option domain-name-servers 8.8.8.8;
         option routers ${SUPERNODE_IPV4_CLIENT_ADDR};
-	option interface-mtu ${DHCPMTU};
+	# braucht man eigentlich nicht: option interface-mtu ${DHCPMTU};
         interface br0;
 }
 ### <<< Ende Freifunk Konfiguration nach Eulenfunk-Schema

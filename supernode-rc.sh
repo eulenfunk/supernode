@@ -9,9 +9,9 @@ IPV6_PREFIX_LENGTH=${SUPERNODE_IPV6_PREFIX##*/}
 IPV6_NET_ADDRESS=${SUPERNODE_IPV6_PREFIX%/*}
 SUPERNODE_IPV6_TRANS_REMOTE=${IPV6_NET_ADDRESS}1
 SUPERNODE_IPV6_CLIENT_PREFIX=${IPV6_NET_ADDRESS}/64
+
 BATMTU=$(cat /etc/fastd/client/fastd.conf|grep mtu\ |cut -d" " -f2|sed s/\;//);
-MSSMTU=$(expr $BATMTU - 78)
-DHCPMTU=$(expor $BATMTU - 38)
+MSSMTU=$((BATMTU - 78))
 
 /sbin/iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
 
