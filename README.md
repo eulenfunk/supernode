@@ -5,3 +5,4 @@
 * [supernode-rc.sh](supernode-rc.sh): Startscript. Soll über /etc/rc.local aufgerufen werden. Zugehörige Konfiguration liegt im selben Ordner ([supernode.config](supernode.config))
 
 
+Infos zum MSS-Clamping ("warum") siehe http://lartc.org/howto/lartc.cookbook.mtu-mss.html
