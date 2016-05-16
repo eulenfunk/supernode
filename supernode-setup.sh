@@ -6,6 +6,7 @@ BASE=/opt/eulenfunk/supernode
 BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
 MSSMTU=$((BATMTU - 78))
 DHCPMTU=$((BATMTU - 38))
+RADVDMTU=$((BATMTU - 54))
 
 echo BATMTU:$BATMTU   DHCPMTU:$DHCPMTU
 
@@ -80,6 +81,7 @@ interface br0 {
   AdvSendAdvert on;
   MaxRtrAdvInterval 600;
   MinDelayBetweenRAs 10;
+  AdvLinkMTU ${RADVDMTU};
   prefix ${SUPERNODE_IPV6_CLIENT_PREFIX} {
     AdvRouterAddr on;
   };
