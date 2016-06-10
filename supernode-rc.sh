@@ -15,6 +15,7 @@ MSSMTU=$((BATMTU - 78))
 echo BATMTU:$BATMTU   MSSMTU:$MSSMTU
 
 /sbin/iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
+/sbin/ip6tables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
 
 ${DBG} /sbin/ip -4 route add table 42 default via 172.31.254.254
 ${DBG} /sbin/ip -6 route add table 42 ${SUPERNODE_IPV6_TRANS_REMOTE} dev eth1
