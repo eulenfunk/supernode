@@ -10,12 +10,15 @@ IPV6_NET_ADDRESS=${SUPERNODE_IPV6_PREFIX%/*}
 SUPERNODE_IPV6_TRANS_REMOTE=${IPV6_NET_ADDRESS}1
 SUPERNODE_IPV6_CLIENT_PREFIX=${IPV6_NET_ADDRESS}/64
 
-BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
-MSSMTU=$((BATMTU - 78))
-echo BATMTU:$BATMTU   MSSMTU:$MSSMTU
+## BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
+## MSSMTU=$((BATMTU - 78))
 
-/sbin/iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
-/sbin/ip6tables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
+MSSMTU=1332
+
+${DBG} BATMTU:$BATMTU   MSSMTU:$MSSMTU
+
+${DBG} /sbin/iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
+${DBG} /sbin/ip6tables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ${MSSMTU}
 
 ${DBG} /sbin/ip -4 route add table 42 default via 172.31.254.254
 ${DBG} /sbin/ip -6 route add table 42 ${SUPERNODE_IPV6_TRANS_REMOTE} dev eth1
