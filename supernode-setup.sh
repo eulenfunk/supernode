@@ -1,23 +1,49 @@
 #!/bin/bash
 
 BASE=/opt/eulenfunk/supernode
+BASE=/home/benedikt/usr/src/github/Eulenfunk/supernode #bw
 
 . ${BASE}/supernode.config
-BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
+#BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
+BATMTU=1406 # bw
 MSSMTU=$((BATMTU - 78))
 DHCPMTU=$((BATMTU - 38))
 RADVDMTU=$((BATMTU - 54))
 
 echo BATMTU:$BATMTU   DHCPMTU:$DHCPMTU
 
-SUPERNODE_IPV4_CLIENT_ADDR=${SUPERNODE_IPV4_CLIENT_NET%.0/*}.1
+export SUPERNODE_IPV6_PREFIX 
+export SUPERNODE_IPV4_CLIENT_NET 
+export SUPERNODE_IPV4_TRANS_ADDR
+
+if [ -z "$SUPERNODE_IPV4_CLIENT_ADDR" ]; then
+exec python3 <<EOF
+import os
+import sys
+import ipaddress
+
+ipv4_client_net=ipaddress.IPv4Network(os.environ['SUPERNODE_IPV4_CLIENT_NET'])
+numhosts=2**(32-ipv4_client_net.prefixlen)
+ipv4_client_first=list(ipv4_client_net.hosts())[0]
+os.environ['SUPERNODE_IPV4_CLIENT_ADDR']=str(ipv4_client_first)
+
+os.environ['SUPERNODE_IPV4_DHCP_RANGE_START'] = \
+	str(ipv4_client_first+int(min([256, numhosts*0.1])))
+os.environ['SUPERNODE_IPV4_DHCP_RANGE_END'] = \
+	str(ipv4_client_first+int(numhosts*2813/65536
+		if ipv4_client_net.prefixlen <= 16
+		else 0.8*numhosts))
+os.execve(os.path.realpath('supernode-setup.sh'), sys.argv, os.environ)
+EOF
+fi
+
 SUPERNODE_IPV6_CLIENT_ADDR=${SUPERNODE_IPV6_PREFIX%/*}3/64
 SUPERNODE_IPV6_TRANS_ADDR=${SUPERNODE_IPV6_PREFIX%/*}2/56
 SUPERNODE_IPV6_CLIENT_PREFIX=${SUPERNODE_IPV6_PREFIX%/*}/64
-
+#SUPERNODE_IPV4_CLIENT_ADDR=${SUPERNODE_IPV4_CLIENT_NET%.0/*}.1
 SUPERNODE_IPV4_CLIENT_NET_ADDR=${SUPERNODE_IPV4_CLIENT_NET%/*}
-SUPERNODE_IPV4_DHCP_RANGE_START=${SUPERNODE_IPV4_CLIENT_NET%.0.0/*}.1.1
-SUPERNODE_IPV4_DHCP_RANGE_END=${SUPERNODE_IPV4_CLIENT_NET%.0.0/*}.10.254
+#SUPERNODE_IPV4_DHCP_RANGE_START=${SUPERNODE_IPV4_CLIENT_NET%.0.0/*}.1.1
+#SUPERNODE_IPV4_DHCP_RANGE_END=${SUPERNODE_IPV4_CLIENT_NET%.0.0/*}.10.254
          
 EXT=eulenfunk
 
