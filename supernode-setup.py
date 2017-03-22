@@ -5,7 +5,7 @@ import ipaddress
 
 #re.search('[A-Za-z0-9][A-Za-z0-9_]*=[^ \n]*', line).group(0)
 conf_re=re.compile('[A-Za-z0-9][A-Za-z0-9_]*=[^ #\n]*')
-mtu_re=re.compile('^[ \t]*mtu[ \t]+([0-9]+);')
+mtu_re=re.compile('^[ \t]*mtu[ \t]+([0-9]+);', re.I)
 conf={}
 
 for line in open('supernode.config'):
