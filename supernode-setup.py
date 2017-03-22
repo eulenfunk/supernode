@@ -5,6 +5,7 @@ import ipaddress
 
 #re.search('[A-Za-z0-9][A-Za-z0-9_]*=[^ \n]*', line).group(0)
 conf_re=re.compile('[A-Za-z0-9][A-Za-z0-9_]*=[^ #\n]*')
+mtu_re=re.compile('^[ \t]*mtu[ \t]+([0-9]+);')
 conf={}
 
 for line in open('supernode.config'):
@@ -17,8 +18,15 @@ for line in open('supernode.config'):
 	    else ipaddress.IPv4Address(val) if re.search('_IPV4_[A-Z]+_ADDR', name) \
 	    else val
 
-##BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
-batmtu=1406
+batmtu = None
+for line in open('/etc/fastd/client/fastd.conf'):
+    result=mtu_re.search(line)
+    if result:
+        batmtu=int(result.expand('\\1'))
+if batmtu == None:
+    print ('mtu not found in fastd conf, exiting')
+    system.exit(1)
+
 mssmtu=batmtu - 78
 dhcpmtu=batmtu - 38
 radvdmtu=batmtu - 54
