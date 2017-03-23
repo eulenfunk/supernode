@@ -13,7 +13,7 @@ for line in open('supernode.config'):
     if line_match:
         name, val = line_match.group(0).split('=')
         conf[name] = \
-            ipaddress.IPv6Network(val) if name.endswith('IPV6_PREFIX') \
+            ipaddress.IPv6Network(val, strict=False) if name.endswith('IPV6_PREFIX') \
             else ipaddress.IPv4Network(val) if re.search('IPV4_[A-Z]+_NET$', name) \
 	    else ipaddress.IPv4Address(val) if re.search('_IPV4_[A-Z]+_ADDR', name) \
 	    else val
@@ -30,10 +30,6 @@ if batmtu == None:
 mssmtu=batmtu - 78
 dhcpmtu=batmtu - 38
 radvdmtu=batmtu - 54
-
-#export SUPERNODE_IPV6_PREFIX 
-#export SUPERNODE_IPV4_CLIENT_NET 
-#export SUPERNODE_IPV4_TRANS_ADDR
 
 conf['SUPERNODE_IPV6_TRANS_ADDR']= \
     str(conf['SUPERNODE_IPV6_PREFIX'][2]) + '/' + str(conf['SUPERNODE_IPV6_PREFIX'].prefixlen)
