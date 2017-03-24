@@ -2,6 +2,7 @@
 
 import re
 import ipaddress
+import glob
 
 #re.search('[A-Za-z0-9][A-Za-z0-9_]*=[^ \n]*', line).group(0)
 conf_re=re.compile('[A-Za-z0-9][A-Za-z0-9_]*=[^ #\n]*')
@@ -17,7 +18,6 @@ for line in open('supernode.config'):
 	    else ipaddress.IPv4Address(val) if re.search('_IPV4_[A-Z]+_ADDR', name) \
 	    else val
 
-
 batmtu = None
 for line in open('/etc/fastd/client/fastd.conf'):
     result=mtu_re.search(line)
@@ -30,6 +30,10 @@ if batmtu == None:
 mssmtu=batmtu - 78
 dhcpmtu=batmtu - 38
 radvdmtu=batmtu - 54
+
+network_devices=[dir.split('/')[-2] for dir in glob.glob('/sys/class/net/*/device')]
+
+open('supernode.vars', mode='w').write('SUPERNODE_TRANS_INTERFACE=' + network_devices[1] + '\n')
 
 ipv6_net, ipv6_prefixlen=conf['SUPERNODE_IPV6_PREFIX'].split('/')
 conf['SUPERNODE_IPV6_CLIENT_NET']=ipv6_net + '/64'
@@ -75,13 +79,13 @@ iface br0 inet static
         netmask """ + str(conf['SUPERNODE_IPV4_CLIENT_NET'].netmask) + """
         bridge_ports none
         bridge_stp no
-	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_CLIENT_ADDR']) + """/64 dev br0
+	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_CLIENT_ADDR']) + """/64 dev $IFACE
 
-auto eth1
-iface eth1 inet static
+auto """ + network_devices[1] + """
+iface """ + network_devices[1] + """ inet static
 	address """ + str(conf['SUPERNODE_IPV4_TRANS_ADDR']) + """
 	netmask 255.255.255.0
-	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_TRANS_ADDR']) + """ dev eth1
+	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_TRANS_ADDR']) + """ dev $IFACE
 ### <<< Ende Freifunk Konfiguration nach Eulenfunk-Schema
 """)
 
@@ -120,8 +124,9 @@ write_dhcpdconfig()
 write_radvdconfig()
 write_sysctl()
 
-print ("Ausgaben in:")
-print ("\tinterfaces."+EXT)
-print ("\tdhcpd.conf."+EXT)
-print ("\tradvd.conf."+EXT)
-print ("\t20-ff-config.conf."+EXT)
+print ('Ausgaben in:')
+print ('\tsupernode.vars')
+print ('\tinterfaces.'+EXT)
+print ('\tdhcpd.conf.'+EXT)
+print ('\tradvd.conf.'+EXT)
+print ('\t20-ff-config.conf.'+EXT)
