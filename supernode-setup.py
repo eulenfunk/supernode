@@ -37,16 +37,15 @@ conf['SUPERNODE_IPV6_CLIENT_ADDR']=ipv6_net + '3/64'
 conf['SUPERNODE_IPV6_TRANS_ADDR']=ipv6_net + '2/' + ipv6_prefixlen
 
 numhosts=2**(32-conf['SUPERNODE_IPV4_CLIENT_NET'].prefixlen)
-ipv4_client_first=next(conf['SUPERNODE_IPV4_CLIENT_NET'].hosts())
 
-conf['SUPERNODE_IPV4_CLIENT_ADDR']=str(ipv4_client_first)
+conf['SUPERNODE_IPV4_CLIENT_ADDR']=next(conf['SUPERNODE_IPV4_CLIENT_NET'].hosts())
 conf['SUPERNODE_IPV4_CLIENT_NET_ADDR']=conf['SUPERNODE_IPV4_CLIENT_NET'][0]
 conf['SUPERNODE_IPV4_DHCP_RANGE_START'] = \
-	str(ipv4_client_first+int(min([256, numhosts*0.1])))
+	str(conf['SUPERNODE_IPV4_CLIENT_NET'][int(min([256, numhosts*0.1]))])
 conf['SUPERNODE_IPV4_DHCP_RANGE_END'] = \
-	str(ipv4_client_first+int(numhosts*2813/65536
-		if conf['SUPERNODE_IPV4_CLIENT_NET'].prefixlen <= 16
-		else 0.8*numhosts))
+	str(conf['SUPERNODE_IPV4_CLIENT_NET'][
+		int(numhosts*2813/65536 if conf['SUPERNODE_IPV4_CLIENT_NET'].prefixlen <= 16
+		else 0.8*numhosts)])
 
 print (conf)
 
@@ -72,8 +71,8 @@ def write_interfaces():
     open('interfaces.' + EXT, 'w').write("""### >>> Start Freifunk Konfiguration nach Eulenfunk-Schema
 auto br0
 iface br0 inet static
-        address """ + conf['SUPERNODE_IPV4_CLIENT_ADDR'] + """
-        netmask 255.255.0.0
+        address """ + str(conf['SUPERNODE_IPV4_CLIENT_ADDR']) + """
+        netmask """ + str(conf['SUPERNODE_IPV4_CLIENT_NET'].netmask) + """
         bridge_ports none
         bridge_stp no
 	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_CLIENT_ADDR']) + """/64 dev br0
@@ -90,12 +89,12 @@ def write_dhcpdconfig():
     open('dhcpd.conf.' + EXT, 'w').write(
 """### >>> Start Freifunk Konfiguration nach Eulenfunk-Schema
 authoritative;
-subnet """ + str(conf['SUPERNODE_IPV4_CLIENT_NET_ADDR']) + """ netmask 255.255.0.0 {
+subnet """ + str(conf['SUPERNODE_IPV4_CLIENT_NET_ADDR']) + " netmask " + str(conf['SUPERNODE_IPV4_CLIENT_NET'].netmask) + """ {
         range """ + conf['SUPERNODE_IPV4_DHCP_RANGE_START'] + " " + conf['SUPERNODE_IPV4_DHCP_RANGE_END'] + """;
         default-lease-time 300;
         max-lease-time 600;
         option domain-name-servers 8.8.8.8;
-        option routers """ + conf['SUPERNODE_IPV4_CLIENT_ADDR'] + """;
+        option routers """ + str(conf['SUPERNODE_IPV4_CLIENT_ADDR']) + """;
 	# braucht man eigentlich nicht: option interface-mtu """ + str(dhcpmtu) + """;
         interface br0;
 }
