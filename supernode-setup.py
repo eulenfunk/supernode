@@ -13,10 +13,10 @@ for line in open('supernode.config'):
     if line_match:
         name, val = line_match.group(0).split('=')
         conf[name] = \
-            ipaddress.IPv6Network(val, strict=False) if name.endswith('IPV6_PREFIX') \
-            else ipaddress.IPv4Network(val) if re.search('IPV4_[A-Z]+_NET$', name) \
+            ipaddress.IPv4Network(val) if re.search('IPV4_[A-Z]+_NET$', name) \
 	    else ipaddress.IPv4Address(val) if re.search('_IPV4_[A-Z]+_ADDR', name) \
 	    else val
+
 
 batmtu = None
 for line in open('/etc/fastd/client/fastd.conf'):
@@ -31,11 +31,10 @@ mssmtu=batmtu - 78
 dhcpmtu=batmtu - 38
 radvdmtu=batmtu - 54
 
-conf['SUPERNODE_IPV6_TRANS_ADDR']= \
-    str(conf['SUPERNODE_IPV6_PREFIX'][2]) + '/' + str(conf['SUPERNODE_IPV6_PREFIX'].prefixlen)
-conf['SUPERNODE_IPV6_CLIENT_PREFIX']=next(conf['SUPERNODE_IPV6_PREFIX'].
-    subnets(64-conf['SUPERNODE_IPV6_PREFIX'].prefixlen))
-conf['SUPERNODE_IPV6_CLIENT_ADDR']=conf['SUPERNODE_IPV6_CLIENT_PREFIX'][3]
+ipv6_net, ipv6_prefixlen=conf['SUPERNODE_IPV6_PREFIX'].split('/')
+conf['SUPERNODE_IPV6_CLIENT_NET']=ipv6_net + '/64'
+conf['SUPERNODE_IPV6_CLIENT_ADDR']=ipv6_net + '3/64'
+conf['SUPERNODE_IPV6_TRANS_ADDR']=ipv6_net + '2/' + ipv6_prefixlen
 
 numhosts=2**(32-conf['SUPERNODE_IPV4_CLIENT_NET'].prefixlen)
 ipv4_client_first=next(conf['SUPERNODE_IPV4_CLIENT_NET'].hosts())
@@ -48,6 +47,8 @@ conf['SUPERNODE_IPV4_DHCP_RANGE_END'] = \
 	str(ipv4_client_first+int(numhosts*2813/65536
 		if conf['SUPERNODE_IPV4_CLIENT_NET'].prefixlen <= 16
 		else 0.8*numhosts))
+
+print (conf)
 
 EXT='eulenfunk'
 
@@ -107,7 +108,7 @@ def write_radvdconfig():
   MaxRtrAdvInterval 600;
   MinDelayBetweenRAs 10;
   AdvLinkMTU """ + str(radvdmtu) + """;
-  prefix """ + str(conf['SUPERNODE_IPV6_CLIENT_PREFIX']) + """ {
+  prefix """ + str(conf['SUPERNODE_IPV6_CLIENT_NET']) + """ {
     AdvRouterAddr on;
   };
   RDNSS 2001:4860:4860::8844 2001:4860:4860::8888 {
