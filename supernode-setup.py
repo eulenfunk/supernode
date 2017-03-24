@@ -79,7 +79,7 @@ iface br0 inet static
         netmask """ + str(conf['SUPERNODE_IPV4_CLIENT_NET'].netmask) + """
         bridge_ports none
         bridge_stp no
-	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_CLIENT_ADDR']) + """/64 dev $IFACE
+	post-up ip -6 addr add """ + str(conf['SUPERNODE_IPV6_CLIENT_ADDR']) + """ dev $IFACE
 
 auto """ + network_devices[1] + """
 iface """ + network_devices[1] + """ inet static
