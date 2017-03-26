@@ -5,7 +5,7 @@ import ipaddress
 import glob
 
 #re.search('[A-Za-z0-9][A-Za-z0-9_]*=[^ \n]*', line).group(0)
-conf_re=re.compile('[A-Za-z0-9][A-Za-z0-9_]*=[^ #\n]*')
+conf_re=re.compile('[A-Za-z0-9][A-Za-z0-9_]*=[^#\n]*')
 mtu_re=re.compile('^[ \t]*mtu[ \t]+([0-9]+);', re.I)
 conf={}
 
@@ -16,6 +16,7 @@ for line in open('supernode.config'):
         conf[name] = \
             ipaddress.IPv4Network(val) if re.search('IPV4_[A-Z]+_NET$', name) \
 	    else ipaddress.IPv4Address(val) if re.search('_IPV4_[A-Z]+_ADDR', name) \
+		else eval(val) if re.search('^\[.+\]', val) \
 	    else val
 
 batmtu = None
@@ -39,6 +40,13 @@ ipv6_net, ipv6_prefixlen=conf['SUPERNODE_IPV6_PREFIX'].split('/')
 conf['SUPERNODE_IPV6_CLIENT_NET']=ipv6_net + '/64'
 conf['SUPERNODE_IPV6_CLIENT_ADDR']=ipv6_net + '3/64'
 conf['SUPERNODE_IPV6_TRANS_ADDR']=ipv6_net + '2/' + ipv6_prefixlen
+
+ipv4_dns=[ipaddress.IPv4Address(ip) for ip in \
+	(conf['CLIENT_DNS4_ADDRS'] if conf.get('CLIENT_DNS4_ADDRS') \
+	else ['8.8.8.8'])]
+ipv6_dns=[ipaddress.IPv6Address(ip) for ip in \
+	(conf['CLIENT_DNS6_ADDRS'] if conf.get('CLIENT_DNS6_ADDRS') \
+	else ['2001:4860:4860::8844', '2001:4860:4860::8888'])]
 
 numhosts=2**(32-conf['SUPERNODE_IPV4_CLIENT_NET'].prefixlen)
 
@@ -97,7 +105,7 @@ subnet """ + str(conf['SUPERNODE_IPV4_CLIENT_NET_ADDR']) + " netmask " + str(con
         range """ + conf['SUPERNODE_IPV4_DHCP_RANGE_START'] + " " + conf['SUPERNODE_IPV4_DHCP_RANGE_END'] + """;
         default-lease-time 300;
         max-lease-time 600;
-        option domain-name-servers 8.8.8.8;
+        option domain-name-servers """ + ', '.join(str(ip) for ip in ipv4_dns) + """;
         option routers """ + str(conf['SUPERNODE_IPV4_CLIENT_ADDR']) + """;
 	# braucht man eigentlich nicht: option interface-mtu """ + str(dhcpmtu) + """;
         interface br0;
@@ -114,7 +122,7 @@ def write_radvdconfig():
   prefix """ + str(conf['SUPERNODE_IPV6_CLIENT_NET']) + """ {
     AdvRouterAddr on;
   };
-  RDNSS 2001:4860:4860::8844 2001:4860:4860::8888 {
+  RDNSS """ + ' '.join(str(ip) for ip in ipv6_dns) + """ {
   };
 };
 """)
