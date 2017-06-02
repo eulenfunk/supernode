@@ -2,6 +2,8 @@
 
 BASE=/opt/eulenfunk/supernode
 
+exec $BASE/supernode-setup.py
+
 . ${BASE}/supernode.config
 BATMTU=$(cat /etc/fastd/client/fastd.conf|grep -i mtu.*\; |sed s/'\t'/\ /|rev|cut -d$' ' -f1|rev|sed s/\;//)
 MSSMTU=$((BATMTU - 78))
